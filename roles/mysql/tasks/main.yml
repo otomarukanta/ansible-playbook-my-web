@@ -1,0 +1,50 @@
+- name: Remove the mariadb
+  yum: name=mariadb-libs state=absent
+
+- name: Install the mysql rpm from a remote repo
+  yum: name=http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm state=present
+  register: install_result
+  failed_when: install_result.rc not in [0, 1]
+
+- name: Install the mysql
+  yum: name={{ item }} state=present
+  with_items:
+    - mysql-community-server
+    - MySQL-python
+
+- name: Start mysql service
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: Set the root's password
+  mysql_user:
+    check_implicit_admin: yes
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+
+# - name: Copy mysql configuration
+#   template:
+#     src: my.cnf.j2
+#     dest: /root/.my.cnf
+
+- name: Create a database for wordpress
+  mysql_db:
+    name: "{{ wp_db_name }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    state: present
+
+- name: Create a user for wordpress
+  mysql_user:
+    name: "{{ wp_db_user }}"
+    password: "{{ wp_db_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    priv: "wordpress.*:ALL"
+    state: present

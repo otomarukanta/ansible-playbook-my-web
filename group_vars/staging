@@ -1,0 +1,11 @@
+os: centos
+os_release: 7
+ssh_port: 22
+remote_user: vagrant
+nginx_hostname: 192.168.33.10
+wp_db_name: wordpress
+wp_db_user: wp_user
+wp_db_password: password
+mysql_root_password: password
+mysql_port: 33245
+wp_version: 4.4.2

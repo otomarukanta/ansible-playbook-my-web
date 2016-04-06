@@ -1,0 +1,22 @@
+- name: Copy the nginx repository definition
+  template: src=nginx.repo.j2 dest=/etc/yum.repos.d/nginx.repo
+
+- name: Install the nginx
+  yum: name=nginx state=present
+
+- name: Copy nginx configuration for wordpress
+  template: src=wordpress.conf.j2 dest=/etc/nginx/conf.d/wordpress.conf
+  notify: restart nginx
+
+- name: Check if firewalld is running
+  command: systemctl is-active firewalld
+  register: firewalld_result
+  changed_when: False
+  ignore_errors: True  # rc is 3 when firewalld is stopped
+
+- name: Insert firewalld rule for nginx
+  firewalld: port={{ nginx_port }}/tcp permanent=true state=enabled immediate=yes
+  when: firewalld_result.stdout == "active"
+
+- name: Start http service
+  service: name=nginx state=started enabled=yes

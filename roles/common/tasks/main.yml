@@ -1,0 +1,28 @@
+- name: Disable the SELinux mode
+  selinux: state=disabled
+  register: selinux_mode
+
+- name: Reboot after change selinux
+  shell: /sbin/shutdown -r now
+  async: 0
+  poll: 0
+  ignore_errors: true
+  when: selinux_mode.changed
+
+- name: Wait for the server to go down (reboot)
+  local_action: wait_for host={{ inventory_hostname }} port={{ ssh_port }} state=stopped
+  sudo: false
+  when: selinux_mode.changed
+
+
+- name: Wait for the server to come up
+  local_action: wait_for host={{ inventory_hostname }} port={{ ssh_port }} delay=30
+  sudo: false
+  when: selinux_mode.changed
+
+
+- name: Check status of SELinux
+  shell: getenforce
+  changed_when: False
+  when: selinux_mode.changed
+

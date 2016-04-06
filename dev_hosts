@@ -1,0 +1,9 @@
+[web-servers]
+192.168.33.10
+
+[db-servers]
+192.168.33.10
+
+[staging:children]
+web-servers
+db-servers

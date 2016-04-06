@@ -1,0 +1,13 @@
+- name: Install php-fpm and deps
+  yum: name={{ item }} state=present
+  with_items:
+    - php
+    - php-fpm
+    - php-mysql
+
+- name: Copy php-fpm configuration
+  template: src=www.conf.j2 dest=/etc/php-fpm.d/www.conf
+  notify: restart php-fpm
+
+- name: Start php-fpm Service
+  service: name=php-fpm state=started enabled=yes
